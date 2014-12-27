@@ -1,3 +1,4 @@
+//https://github.com/jlongster/canvas-game-bootstrap/blob/a878158f39a91b19725f726675c752683c9e1c08/js/input.js
 (function() {
     var pressedKeys = {};
 
