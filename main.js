@@ -2,7 +2,7 @@ var cnv = document.getElementById('cnv'),
     ctx = cnv.getContext('2d'),
     w = cnv.width = 600,
     h = cnv.height = 850,
-    e = -10,
+    // e = -10,
     x = Math.random() * 600 >> 0,
     speed = 100,
     r = 10,
@@ -13,11 +13,12 @@ var cnv = document.getElementById('cnv'),
     speedK = 10,
     gdt = 0,
     score = 0,
+    numFlash = 10,
     img = new Image(),
     badFlash = new Image(),
     goodFlash = new Image();
 
-img.src = 'http://webtort.ru/icon/icons/raznoe/raznoe21/%D0%BC%D0%BE%D0%BD%D0%B8%D1%82%D0%BE%D1%80.png';
+img.src = 'монитор.png';
 badFlash.src = 'bad64.png';
 goodFlash.src = 'good64.png';
 
@@ -44,7 +45,6 @@ var Player = {
   },
   resolvePos: function(x) {
     this.x += x;
-
     if(this.x <= 0) {
       this.x = 0;
     } else if(this.x >= w - this.img.width){
@@ -72,9 +72,9 @@ function init() {
         speed = (25 + radius) * speedK;
     stars[i] = Object.create(Star).constructor(Math.random() * w >> 0, Math.random() * h >> 0, radius, speed);
   }
-  for(i = 0; i < 50; i++) {
+  for(i = 0; i < numFlash; i++) {
     var fl = (Math.random()*2 >> 0) ? badFlash : goodFlash;
-    flash[i] = Object.create(Player).constructor(fl, range(0, w-fl.width), range(-(h*2), -h), 500);
+    flash[i] = Object.create(Player).constructor(fl, range(0, w-fl.width), range(-(h*2), -h), range(300, 700));
   }
 }
 
@@ -92,22 +92,23 @@ var requestAnimFrame = (function(){
 function update(dt) {
   ctx.fillStyle = "#000";
   ctx.fillRect(0,0,w,h);
-  e += dt * speed;
+  // e += dt * speed;
   for(var i = 0; i < stars.length; i++) {
     if(stars[i].y >= h + stars[i].r) {
       stars[i].y = -stars[i].r;
-      stars[i].x = Math.random() * 600 >> 0;
+      stars[i].x = Math.random() * w >> 0;
       stars[i].r = range(3, 7);
       stars[i].speed = (25 + stars[i].r) * speedK;
     } else {
       stars[i].y += dt * stars[i].speed;
     }
   }
-  for(i = 0; i < 50; i++) {
+  for(i = 0; i < numFlash; i++) {
     if(flash[i].y > h + flash[i].img.height) {
       flash[i].y = range(-400, -200);
       flash[i].x = range(0, w-flash[i].img.width);
       flash[i].img = (Math.random()*2 >> 0) ? badFlash : goodFlash;
+      flash[i].speed = range(300, 700);
     } else {
       flash[i].y += dt * flash[i].speed;
     }
@@ -117,8 +118,8 @@ function update(dt) {
         flash[i].y = range(-400, -200);
         flash[i].x = range(0, w-flash[i].img.width);
         flash[i].img = (Math.random()*2 >> 0) ? badFlash : goodFlash;
+        flash[i].speed = range(300, 700);
         score++;
-        console.log(score);
       }
     }
   }
@@ -133,7 +134,7 @@ function render() {
     ctx.closePath();
     ctx.fill();
   }
-  for(i = 0; i < 50; i++) {
+  for(i = 0; i < numFlash; i++) {
     ctx.drawImage(flash[i].img, flash[i].x, flash[i].y);
   }
   ctx.drawImage(pl.img, pl.x, pl.y);
@@ -145,17 +146,13 @@ function main() {
   gdt = delta;
   update(delta);
   render();
-  if(e > w + r) {
-    e = 0 - r;
-    x = Math.random() * 600 >> 0;
-  }
+  // if(e > w + r) {
+  //   e = 0 - r;
+  //   x = Math.random() * w >> 0;
+  // }
   oldTime = new Date();
   requestAnimFrame(main);
 }
-
-// cnv.onkeydown = function(e) {
-//   pl.move(e.keyCode, gdt);
-// };
 
 init();
 main();
