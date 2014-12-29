@@ -2,10 +2,8 @@ var cnv = document.getElementById('cnv'),
     ctx = cnv.getContext('2d'),
     w = cnv.width = 600,
     h = cnv.height = 850,
-    // e = -10,
     x = Math.random() * 600 >> 0,
     speed = 100,
-    r = 10,
     oldTime = new Date(),
     nowTime,
     stars = [],
@@ -13,6 +11,9 @@ var cnv = document.getElementById('cnv'),
     speedK = 10,
     gdt = 0,
     score = 0,
+    maxScore = 200,
+    lineScoreSize = 500,
+    scoreSize = 0,
     numFlash = 10,
     img = new Image(),
     badFlash = new Image(),
@@ -22,8 +23,8 @@ img.src = 'монитор.png';
 badFlash.src = 'bad64.png';
 goodFlash.src = 'good64.png';
 
-ctx.strokeStyle = "#f55";
-ctx.fillStyle = "#fff";
+ctx.fillStyle = '#fff';
+ctx.font = '20px Arial';
 
 var Star = {
   constructor: function(x, y, r, speed) {
@@ -92,7 +93,7 @@ var requestAnimFrame = (function(){
 function update(dt) {
   ctx.fillStyle = "#000";
   ctx.fillRect(0,0,w,h);
-  // e += dt * speed;
+  ctx.fillStyle = "#fff";
   for(var i = 0; i < stars.length; i++) {
     if(stars[i].y >= h + stars[i].r) {
       stars[i].y = -stars[i].r;
@@ -120,6 +121,8 @@ function update(dt) {
         flash[i].img = (Math.random()*2 >> 0) ? badFlash : goodFlash;
         flash[i].speed = range(300, 700);
         score++;
+        var percent = score * 100 / 200;
+        scoreSize = (percent / 100) * lineScoreSize;
       }
     }
   }
@@ -127,7 +130,6 @@ function update(dt) {
 }
 
 function render() {
-  ctx.fillStyle = "#fff";
   for(var i = 0; i < stars.length; i++) {
     ctx.beginPath();
     ctx.arc(stars[i].x, stars[i].y, stars[i].r, 0, Math.PI * 2, true);
@@ -137,7 +139,10 @@ function render() {
   for(i = 0; i < numFlash; i++) {
     ctx.drawImage(flash[i].img, flash[i].x, flash[i].y);
   }
+  ctx.fillText('Score: ' + score, 30, 30);
   ctx.drawImage(pl.img, pl.x, pl.y);
+  ctx.fillStyle = '#f90';
+  ctx.fillRect(50, 300, scoreSize, 40);
 }
 
 function main() {
@@ -146,10 +151,6 @@ function main() {
   gdt = delta;
   update(delta);
   render();
-  // if(e > w + r) {
-  //   e = 0 - r;
-  //   x = Math.random() * w >> 0;
-  // }
   oldTime = new Date();
   requestAnimFrame(main);
 }
