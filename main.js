@@ -37,11 +37,12 @@ var Star = {
 };
 
 var Player = {
-  constructor: function(img, x, y, speed) {
+  constructor: function(img, x, y, speed, type) {
     this.img = img;
     this.x = x - img.width / 2;
     this.y = y - img.height / 2;
     this.speed = speed;
+    this.type = type || 'player';
     return this;
   },
   resolvePos: function(x) {
@@ -61,7 +62,17 @@ var Player = {
   }
 };
 
-var pl = Object.create(Player).constructor(img, 400, h-128, 500);
+var pl = Object.create(Player).constructor(img, range(0, w-128), h-128, 500);
+
+function endOfTheGame() {
+  if(score >= 20) {
+    return 'win';
+  } else if(score < 0) {
+    return 'end';
+  } else {
+    return 'con';
+  }
+}
 
 function range(min, max) {
   return min + Math.random() * (max - min);
@@ -74,8 +85,10 @@ function init() {
     stars[i] = Object.create(Star).constructor(Math.random() * w >> 0, Math.random() * h >> 0, radius, speed);
   }
   for(i = 0; i < numFlash; i++) {
-    var fl = (Math.random()*2 >> 0) ? badFlash : goodFlash;
-    flash[i] = Object.create(Player).constructor(fl, range(0, w-fl.width), range(-(h*2), -h), range(300, 700));
+    var randCol = (Math.random()*2 >> 0);
+    var fl = randCol ? badFlash : goodFlash;
+    var type = randCol ? 'red' : 'green';
+    flash[i] = Object.create(Player).constructor(fl, range(0, w-fl.width), range(-(h*2), -h), range(300, 700), type);
   }
 }
 
@@ -104,7 +117,7 @@ function update(dt) {
       stars[i].y += dt * stars[i].speed;
     }
   }
-  for(i = 0; i < numFlash; i++) {
+  for(i = 0; i < flash.length; i++) {
     if(flash[i].y > h + flash[i].img.height) {
       flash[i].y = range(-400, -200);
       flash[i].x = range(0, w-flash[i].img.width);
@@ -116,11 +129,20 @@ function update(dt) {
     
     if(flash[i].y + flash[i].img.height >= pl.y) {
       if(flash[i].x >= pl.x - (pl.img.width / 2) && flash[i].x <= pl.x + pl.img.width) {
+        if(flash[i].type === 'green') { // тут что то непонятное происходит :)
+          score++;
+        } else if(flash[i].type === 'red') {
+          score -= 5;
+        }
+        var randCol = (Math.random()*2 >> 0);
+        var fl = randCol ? badFlash : goodFlash;
+        var type = randCol ? 'red' : 'green';
         flash[i].y = range(-400, -200);
         flash[i].x = range(0, w-flash[i].img.width);
-        flash[i].img = (Math.random()*2 >> 0) ? badFlash : goodFlash;
+        flash[i].img = fl;
         flash[i].speed = range(300, 700);
-        score++;
+        flash[i].type = type;
+
         var percent = score * 100 / 200;
         scoreSize = (percent / 100) * lineScoreSize;
       }
@@ -136,22 +158,29 @@ function render() {
     ctx.closePath();
     ctx.fill();
   }
-  for(i = 0; i < numFlash; i++) {
+  for(i = 0; i < flash.length; i++) {
     ctx.drawImage(flash[i].img, flash[i].x, flash[i].y);
   }
   ctx.fillText('Score: ' + score, 30, 30);
   ctx.drawImage(pl.img, pl.x, pl.y);
   ctx.fillStyle = '#f90';
-  ctx.fillRect(50, 300, scoreSize, 40);
+  ctx.fillRect(50, h - 20, scoreSize, 10);
 }
 
 function main() {
-  nowTime = new Date();
-  var delta = (nowTime - oldTime) / 1000.0;
-  gdt = delta;
-  update(delta);
-  render();
-  oldTime = new Date();
+  if(endOfTheGame() === 'con') {
+    nowTime = new Date();
+    var delta = (nowTime - oldTime) / 1000.0;
+    gdt = delta;
+    update(delta);
+    render();
+    oldTime = new Date();
+  } else if(endOfTheGame() === 'win') {
+    ctx.fillText('Победа!', 260, h / 2 - 15);
+  } else if(endOfTheGame() === 'end') {
+    ctx.fillText('Поражение!', 250, h / 2 - 15);
+  }
+
   requestAnimFrame(main);
 }
 
