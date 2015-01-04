@@ -65,7 +65,7 @@ var Player = {
 var pl = Object.create(Player).constructor(img, range(0, w-128), h-128, 500);
 
 function endOfTheGame() {
-  if(score >= 20) {
+  if(score >= maxScore) {
     return 'win';
   } else if(score < 0) {
     return 'end';
@@ -92,7 +92,7 @@ function init() {
   }
 }
 
-var requestAnimFrame = (function(){
+var requestAnimFrame = (function() { // функция анимации
     return window.requestAnimationFrame    ||
         window.webkitRequestAnimationFrame ||
         window.mozRequestAnimationFrame    ||
@@ -103,7 +103,7 @@ var requestAnimFrame = (function(){
         };
 })();
 
-function update(dt) {
+function update(dt) { // пересчет каждый кадр
   ctx.fillStyle = "#000";
   ctx.fillRect(0,0,w,h);
   ctx.fillStyle = "#fff";
@@ -118,23 +118,25 @@ function update(dt) {
     }
   }
   for(i = 0; i < flash.length; i++) {
+    var randCol = (Math.random()*2 >> 0);
     if(flash[i].y > h + flash[i].img.height) {
       flash[i].y = range(-400, -200);
       flash[i].x = range(0, w-flash[i].img.width);
-      flash[i].img = (Math.random()*2 >> 0) ? badFlash : goodFlash;
+      flash[i].img = randCol ? badFlash : goodFlash;
+      flash[i].type = randCol ? 'red' : 'green';
       flash[i].speed = range(300, 700);
     } else {
       flash[i].y += dt * flash[i].speed;
     }
-    
+
     if(flash[i].y + flash[i].img.height >= pl.y) {
       if(flash[i].x >= pl.x - (pl.img.width / 2) && flash[i].x <= pl.x + pl.img.width) {
-        if(flash[i].type === 'green') { // тут что то непонятное происходит :)
+        if(flash[i].type === 'green') {
           score++;
         } else if(flash[i].type === 'red') {
           score -= 5;
         }
-        var randCol = (Math.random()*2 >> 0);
+
         var fl = randCol ? badFlash : goodFlash;
         var type = randCol ? 'red' : 'green';
         flash[i].y = range(-400, -200);
@@ -160,6 +162,7 @@ function render() {
   }
   for(i = 0; i < flash.length; i++) {
     ctx.drawImage(flash[i].img, flash[i].x, flash[i].y);
+    ctx.fillText(flash[i].type, flash[i].x, flash[i].y);
   }
   ctx.fillText('Score: ' + score, 30, 30);
   ctx.drawImage(pl.img, pl.x, pl.y);
